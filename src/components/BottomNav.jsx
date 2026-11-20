@@ -1,7 +1,7 @@
 import { Activity, BookOpen, Clock, MessageCircle, Plus } from 'lucide-react'
 
 const items = [
-  { id: 'tree', label: '树洞', icon: MessageCircle },
+  { id: 'tree', label: '漂流', icon: MessageCircle },
   { id: 'emotion', label: '情绪', icon: Activity },
   { id: 'quick', label: '快速记录', icon: Plus, center: true },
   { id: 'album', label: '记录册', icon: BookOpen },

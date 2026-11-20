@@ -4,7 +4,6 @@ import Calendar from './Calendar'
 import ConfirmDialog from './ConfirmDialog'
 import FloatingField from './FloatingField'
 import { STORAGE_KEYS } from '../data/storage'
-import { demoEchoes, demoReplies, whispers } from '../data/mockData'
 import { formatDateTime, formatFriendlyDate, getDateKey, groupByDate, sortByDateDesc } from '../data/entries'
 
 const NOTE_COOLDOWN_MS = 30_000
@@ -81,7 +80,6 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
   const [section, setSection] = useState('drift')
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortMode, setSortMode] = useState('latest')
-  const [batch, setBatch] = useState(0)
   const [seed, setSeed] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
@@ -145,12 +143,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
     return map
   }, [treeItems])
 
-  const demoBatch = useMemo(() => {
-    const start = (batch * 3) % whispers.length
-    return Array.from({ length: 4 }, (_, index) => whispers[(start + index) % whispers.length])
-  }, [batch])
-
-  const allItems = useMemo(() => sortByDateDesc([...treeItems, ...demoBatch]), [treeItems, demoBatch])
+  const allItems = useMemo(() => sortByDateDesc(treeItems), [treeItems])
 
   const dayColors = useMemo(() => {
     const grouped = groupByDate(allItems)
@@ -177,7 +170,6 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
   )
 
   const echoList = useMemo(() => {
-    const demo = demoEchoes.map((item) => ({ ...item, source: 'demo' }))
     const mine = reactions
       .filter((item) => item.isMine)
       .map((item) => ({
@@ -200,7 +192,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
         createdAt: item.createdAt,
         source: 'local-note',
       }))
-    return sortByDateDesc([...demo, ...mine, ...legacy])
+    return sortByDateDesc([...mine, ...legacy])
   }, [reactions, comments, hiddenNoteIds, showHiddenNotes])
 
   const echoDayColors = useMemo(() => {
@@ -217,7 +209,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
     [echoList, echoDate],
   )
 
-  const bottleItem = useMemo(() => demoBatch[1] || demoBatch[0], [demoBatch])
+  const bottleItem = useMemo(() => allItems[1] || allItems[0] || null, [allItems])
 
   const goTo = (next) => {
     setSection(next)
@@ -230,7 +222,6 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
     setExpandedId(null)
     setBottleOpen(false)
     window.setTimeout(() => {
-      setBatch((value) => value + 1)
       setSeed((value) => value + 1)
       setBottleVisible(Math.random() < 0.45)
       setIsRefreshing(false)
@@ -314,10 +305,6 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
       onNotify?.('这条回声对应的悄悄话已经不在当前的漂流中。')
       return
     }
-    if (target.isDemo) {
-      const demoIndex = whispers.findIndex((item) => item.id === echo.targetId)
-      if (demoIndex >= 0) setBatch(Math.floor(demoIndex / 3))
-    }
     setSelectedDate(null)
     setSortMode('latest')
     setSection('drift')
@@ -351,7 +338,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
       </div>
 
       <header className="page-head">
-        <p className="eyebrow">THE HOLLOW · 树洞</p>
+        <p className="eyebrow">THE HOLLOW · 漂流</p>
         <h2>让说不出口的话，先漂一会儿。</h2>
         <p className="page-desc">这里可以浏览匿名悄悄话，也可以送出一个抱抱或一颗星星。</p>
         <p className="demo-note">当前内容与回声均为本地演示，不会真的发送到其他人的设备。</p>
@@ -449,7 +436,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
                 const shownNotes = showHiddenNotes
                   ? itemNotes
                   : itemNotes.filter((note) => !hiddenNoteIds.has(String(note.id)))
-                const itemDemoReplies = item.isDemo ? demoReplies.filter((reply) => reply.targetId === item.id) : []
+                const itemDemoReplies = []
                 const shownDemoReplies = showHiddenNotes
                   ? itemDemoReplies
                   : itemDemoReplies.filter((reply) => !hiddenNoteIds.has(String(reply.id)))
@@ -664,7 +651,7 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
             <Calendar value={selectedDate} onChange={setSelectedDate} dayColors={dayColors} label="树洞日期筛选" />
           </section>
 
-          {!isRefreshing && bottleVisible && (
+          {!isRefreshing && bottleVisible && bottleItem && (
             <button
               type="button"
               className="drift-bottle"
@@ -743,8 +730,6 @@ export default function TreeHole({ entries, treeItems, comments, reactions = [],
             </p>
             <button type="button" className="text-btn" onClick={() => {
               setBottleOpen(false)
-              const demoIndex = whispers.findIndex((item) => item.id === bottleItem.id)
-              if (demoIndex >= 0) setBatch(Math.floor(demoIndex / 3))
               setSelectedDate(null)
               setSortMode('latest')
               setSection('drift')

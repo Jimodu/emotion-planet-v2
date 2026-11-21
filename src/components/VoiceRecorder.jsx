@@ -24,7 +24,7 @@ function formatDuration(seconds) {
   return `${minutes}:${rest}`
 }
 
-export default function VoiceRecorder({ value, onChange, onNotify }) {
+export default function VoiceRecorder({ value, onChange, onNotify, onActiveChange, disabled = false }) {
   const [recording, setRecording] = useState(false)
   const [paused, setPaused] = useState(false)
   const [seconds, setSeconds] = useState(0)
@@ -38,8 +38,15 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
   const recognitionRef = useRef(null)
   const transcriptRef = useRef(value?.transcript || '')
   const urlRef = useRef('')
+  const activeRef = useRef(false)
 
   const voice = value || null
+
+  const setActive = (active) => {
+    if (activeRef.current === active) return
+    activeRef.current = active
+    onActiveChange?.(active)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -69,6 +76,7 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
   }, [voice?.transcript, voice?.transcriptStatus])
 
   useEffect(() => () => {
+    setActive(false)
     if (timerRef.current) window.clearInterval(timerRef.current)
     if (recorderRef.current && recorderRef.current.state !== 'inactive') recorderRef.current.stop()
     if (streamRef.current) streamRef.current.getTracks().forEach((track) => track.stop())
@@ -93,6 +101,10 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
   }
 
   const start = async () => {
+    if (disabled) {
+      onNotify?.('请先停止语音输入，再开始录音。')
+      return
+    }
     if (!isAudioSupported()) {
       onNotify?.('当前浏览器不支持录音，可以直接在下方输入文字。')
       return
@@ -119,6 +131,7 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
         }
         const elapsed = seconds || 0
         if (!chunksRef.current.length) {
+          setActive(false)
           setRecording(false)
           return
         }
@@ -131,11 +144,13 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
         } catch {
           onNotify?.('录音没能保存下来，可以重新录一次或直接输入文字。')
         }
+        setActive(false)
         setRecording(false)
         setPaused(false)
       }
       recorder.start()
       setSeconds(0)
+      setActive(true)
       setRecording(true)
       setPaused(false)
       startTimer()
@@ -190,6 +205,7 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
       } else {
         onNotify?.('录音没能开始，可以直接用文字记录。')
       }
+      setActive(false)
       setRecording(false)
       setPaused(false)
     }
@@ -268,7 +284,7 @@ export default function VoiceRecorder({ value, onChange, onNotify }) {
 
       <div className="voice-controls">
         {!recording && !voice?.audioId && (
-          <button type="button" className="voice-btn start" onClick={start}>
+          <button type="button" className="voice-btn start" onClick={start} disabled={disabled}>
             <Mic size={16} strokeWidth={1.8} aria-hidden="true" />
             开始录音
           </button>

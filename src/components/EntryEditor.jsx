@@ -16,6 +16,8 @@ export default function EntryEditor({ entry, onSave, onCancel, favoriteColors, r
   const [note, setNote] = useState(entry.note || '')
   const [visibility, setVisibility] = useState(entry.visibility === 'anonymous' ? 'anonymous' : 'private')
   const [voice, setVoice] = useState(entry.voice || null)
+  const [voiceRecording, setVoiceRecording] = useState(false)
+  const [senseInputActive, setSenseInputActive] = useState(false)
   const [dateEnabled, setDateEnabled] = useState(false)
   const [dateValue, setDateValue] = useState(() => getDateKey(entry.createdAt) || '')
   const color = applyIntensity(baseColor, intensity)
@@ -86,8 +88,18 @@ export default function EntryEditor({ entry, onSave, onCancel, favoriteColors, r
             onToggleFavorite={onToggleFavorite}
           />
           <IntensitySlider value={intensity} onChange={setIntensity} color={color} />
-          <NoteInput value={note} onChange={setNote} />
-          <VoiceRecorder value={voice} onChange={setVoice} />
+          <NoteInput
+            value={note}
+            onChange={setNote}
+            speechDisabled={voiceRecording}
+            onActiveChange={setSenseInputActive}
+          />
+          <VoiceRecorder
+            value={voice}
+            onChange={setVoice}
+            onActiveChange={setVoiceRecording}
+            disabled={senseInputActive}
+          />
           <VisibilityToggle value={visibility} onChange={setVisibility} />
 
           {allowDateEdit && (

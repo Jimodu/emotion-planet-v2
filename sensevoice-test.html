@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>SenseVoice 接入测试（阶段1）</title>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <h1>SenseVoice-Small 本地识别 · 阶段1 接入测试</h1>
+        <p class="subtitle">sherpa-onnx WebAssembly · 本地推理 · 音频不上传 · 尚未接入正式情绪记录页</p>
+      </header>
+
+      <section class="panel">
+        <h2>1. 运行环境</h2>
+        <div id="environment" class="info"></div>
+      </section>
+
+      <section class="panel">
+        <h2>2. 模型加载</h2>
+        <div class="row">
+          <button id="prepare" type="button">加载 SenseVoice 模型</button>
+          <span id="model-status" class="badge">未加载</span>
+        </div>
+        <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+        <div id="progress-text" class="muted">等待加载…</div>
+        <div id="model-detail" class="info"></div>
+      </section>
+
+      <section class="panel">
+        <h2>3. 麦克风识别</h2>
+        <div class="row">
+          <button id="start" type="button" disabled>开始识别</button>
+          <button id="stop" type="button" disabled>停止识别</button>
+          <span id="mic-status" class="badge">未启动</span>
+        </div>
+        <div id="mic-detail" class="info"></div>
+        <p class="hint">允许麦克风权限后说普通话；说话时实时显示【识别中】文字，停顿后由 SenseVoice 终审修正。</p>
+      </section>
+
+      <section class="panel">
+        <h2>4. 识别结果</h2>
+        <textarea id="transcript" rows="10" placeholder="识别文字会连续追加到这里，也可以手动编辑…"></textarea>
+        <div class="row metrics">
+          <span id="metrics">暂无</span>
+          <button id="clear" type="button" class="secondary">清空文字</button>
+        </div>
+        <div id="result-diag" class="result-diag">结果链路诊断：等待识别…</div>
+      </section>
+
+      <section class="panel">
+        <h2>5. 自动计时诊断</h2>
+        <div id="timing-diag" class="result-diag">计时诊断：等待识别…</div>
+      </section>
+
+      <section class="panel">
+        <h2>6. 诊断日志</h2>
+        <div id="live" class="info">等待操作…</div>
+        <pre id="logs" class="logs"></pre>
+      </section>
+    </main>
+    <script type="module" src="/src/sensevoice-test/main.js"></script>
+  </body>
+</html>

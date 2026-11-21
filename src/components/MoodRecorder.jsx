@@ -56,6 +56,8 @@ export default function MoodRecorder({ onSave, onNotify, onCancel, favoriteColor
   const [note, setNote] = useState(draft?.note || defaults.note)
   const [visibility, setVisibility] = useState(draft?.visibility || defaults.visibility)
   const [voice, setVoice] = useState(draft?.voice || null)
+  const [voiceRecording, setVoiceRecording] = useState(false)
+  const [senseInputActive, setSenseInputActive] = useState(false)
   const [hasDraft, setHasDraft] = useState(Boolean(draft))
   const [clearOpen, setClearOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
@@ -198,8 +200,19 @@ export default function MoodRecorder({ onSave, onNotify, onCancel, favoriteColor
         onToggleFavorite={onToggleFavorite}
       />
       <IntensitySlider value={intensity} onChange={handleIntensityChange} color={color} />
-      <NoteInput value={note} onChange={handleNoteChange} />
-      <VoiceRecorder value={voice} onChange={handleVoiceChange} onNotify={onNotify} />
+      <NoteInput
+        value={note}
+        onChange={handleNoteChange}
+        speechDisabled={voiceRecording}
+        onActiveChange={setSenseInputActive}
+      />
+      <VoiceRecorder
+        value={voice}
+        onChange={handleVoiceChange}
+        onNotify={onNotify}
+        onActiveChange={setVoiceRecording}
+        disabled={senseInputActive}
+      />
       <VisibilityToggle value={visibility} onChange={handleVisibilityChange} />
 
       <div className="record-actions">
